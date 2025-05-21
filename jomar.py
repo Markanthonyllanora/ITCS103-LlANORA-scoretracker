@@ -1,20 +1,14 @@
 import tkinter as tk
 from tkinter import messagebox
-from openpyxl import load_workbook, Workbook
+from openpyxl import Workbook, load_workbook
 import os
 
-# Gumawa ng Excel file kung wala pa
-if not os.path.exists("Grade.xlsx"):
-    wb = Workbook()
-    ws = wb.active
-    ws.title = "Grades"
-    ws.append(["Name", "Course", "Grade"])
-    wb.save("Grade.xlsx")
+
 
 def validate_inputs():
-    name = name_entry.get()
-    course = course_entry.get()
-    grade = grade_entry.get()
+    name = entry_name.get()
+    course = entry_course.get()
+    grade = entry_grade.get()
 
     if not name or not course or not grade:
         messagebox.showerror("Input Error", "All fields are required!")
@@ -25,65 +19,107 @@ def save_to_excel():
     if not validate_inputs():
         return
 
-    name = name_entry.get()
-    course = course_entry.get()
-    grade = grade_entry.get()
+    name = entry_name.get()
+    course = entry_course.get()
+    grade = entry_grade.get()
 
-    wb = load_workbook("Grade.xlsx")
-    ws = wb["Grades"]
+    filename = "gradessssssssssssssssss.xlsx"
+
+    # Check if Excel file exists, if not create it with header
+    if not os.path.exists(filename):
+        wb = Workbook()
+        ws = wb.active
+        ws.title = "Grades"
+        ws.append(["Name", "Course", "Grade"])  # Header row
+    else:
+        wb = load_workbook(filename)
+        if "Grades" not in wb.sheetnames:
+            ws = wb.create_sheet("Grades")
+            ws.append(["Name", "Course", "Grade"])  # Header row
+        else:
+            ws = wb["Grades"]
+
     ws.append([name, course, grade])
-    wb.save("Grade.xlsx")
-    messagebox.showinfo("Success", "Data saved successfully!")
+    wb.save(filename)
 
-    name_entry.delete(0, tk.END)
-    course_entry.delete(0, tk.END)
-    grade_entry.delete(0, tk.END)
+    messagebox.showinfo("Done", "Your entry has been recorded!")
+
+    entry_name.delete(0, tk.END)
+    entry_course.delete(0, tk.END)
+    entry_grade.delete(0, tk.END)
 
 def show_data():
-    wb = load_workbook("Grade.xlsx")
+    filename = "gradessssssssssssssssss.xlsx"
+
+    if not os.path.exists(filename):
+        messagebox.showerror("Error", "No data file found!")
+        return
+
+    wb = load_workbook(filename)
+
+    if "Grades" not in wb.sheetnames:
+        messagebox.showerror("Error", "No 'Grades' worksheet found!")
+        return
+
     ws = wb["Grades"]
 
-    data = tk.Toplevel(window)
+    data = tk.Toplevel(main_window)
     data.title("Student Data")
-    data.geometry("300x300")
-    data.configure(bg="light blue")
+    data.geometry("300x200")
+    data.configure(bg="light gray")
 
     for i, row in enumerate(ws.iter_rows(values_only=True)):
         for j, value in enumerate(row):
-            label = tk.Label(data, text=value, bg="light blue", padx=6, pady=3)
+            label = tk.Label(data, text=value, bg="light gray", padx=4, pady=2)
             label.grid(row=i, column=j)
 
-window = tk.Tk()
-window.geometry("300x300")
-window.title("Grade Report")
-window.configure(bg="light blue")
+# --------------------- Main Window Setup ---------------------
 
-header_lbl = tk.Label(window, text="Grade Report", font=("arial", 18), bg="light blue")
-frame = tk.Frame(window, bg="light blue")
+main_window = tk.Tk()
+main_window.geometry("260x250")
+main_window.title("Grade Report")
+main_window.configure(bg="light gray")
 
-name_lbl = tk.Label(frame, text="Name", font=("arial", 12), bg="light blue")
-course_lbl = tk.Label(frame, text="Course", font=("arial", 12), bg="light blue")
-grade_lbl = tk.Label(frame, text="Grade", font=("arial", 12), bg="light blue")
+# --------------------- Header ---------------------
 
-name_entry = tk.Entry(frame, width=20)
-course_entry = tk.Entry(frame, width=20)
-grade_entry = tk.Entry(frame, width=20)
+label_header = tk.Label(main_window, text="Grade Report", font=("arial", 14), bg="light gray")
+label_header.pack(pady=10)
 
-header_lbl.pack(pady=25)
-frame.pack()
+# --------------------- Frame for Form ---------------------
 
-name_lbl.grid(row=0, column=0, sticky="w")
-course_lbl.grid(row=1, column=0, sticky="w")
-grade_lbl.grid(row=2, column=0, sticky="w")
+form_frame = tk.Frame(main_window, bg="light gray")
+form_frame.pack()
 
-name_entry.grid(row=0, column=1, padx=5, pady=5)
-course_entry.grid(row=1, column=1, padx=5, pady=5)
-grade_entry.grid(row=2, column=1, padx=5, pady=5)
+# --------------------- Labels ---------------------
 
-save_btn = tk.Button(frame, text="Save", font=("arial", 9), width=12, command=save_to_excel)
-view_data_btn = tk.Button(frame, text="View Data", font=("arial", 9), width=12, command=show_data)
+label_name = tk.Label(form_frame, text="Name", font=("arial", 10), bg="light gray")
+label_name.grid(row=0, column=0, sticky="w", padx=3, pady=3)
 
-save_btn.grid(row=3, column=0, padx=5, pady=15)
-view_data_btn.grid(row=3, column=1, padx=5, pady=15)
+label_course = tk.Label(form_frame, text="Course", font=("arial", 10), bg="light gray")
+label_course.grid(row=1, column=0, sticky="w", padx=3, pady=3)
 
-window.mainloop()
+label_grade = tk.Label(form_frame, text="Grade", font=("arial", 10), bg="light gray")
+label_grade.grid(row=2, column=0, sticky="w", padx=3, pady=3)
+
+# --------------------- Entry Fields ---------------------
+
+entry_name = tk.Entry(form_frame, width=18)
+entry_name.grid(row=0, column=1, padx=3, pady=3)
+
+entry_course = tk.Entry(form_frame, width=18)
+entry_course.grid(row=1, column=1, padx=3, pady=3)
+
+entry_grade = tk.Entry(form_frame, width=18)
+entry_grade.grid(row=2, column=1, padx=3, pady=3)
+
+# --------------------- Buttons ---------------------
+
+button_save = tk.Button(form_frame, text="Save", font=("arial", 9), width=10, command=save_to_excel)
+button_save.grid(row=3, column=0, padx=4, pady=10)
+
+button_view = tk.Button(form_frame, text="View Data", font=("arial", 9), width=10, command=show_data)
+button_view.grid(row=3, column=1, padx=4, pady=10)
+
+# --------------------- Run Application ---------------------
+
+main_window.mainloop()
